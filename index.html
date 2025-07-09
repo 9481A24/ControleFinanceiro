@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -26,7 +27,7 @@
       border-radius: 5px;
       box-sizing: border-box;
     }
-    h2 {
+    h2, h3 {
       text-align: center;
     }
     .result {
@@ -35,6 +36,23 @@
     .alerta {
       color: red;
       font-weight: bold;
+      text-align: center;
+    }
+    .verde {
+      color: green;
+      font-weight: bold;
+      text-align: center;
+    }
+    .valores {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    .valores p {
+      margin: 5px 0;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -68,15 +86,21 @@
       const contas = 1300;
       const reserva = entradaTotal - (dizimo + alimentacao + contas);
 
-      let alerta = reserva < 0 ? '<p class="alerta">⚠️ Gasto maior que a entrada!</p>' : reserva === 0 ? '<p class="alerta">⚠️ Sem sobras este mês!</p>' : '<p style="color:green">✅ Reserva recebida com sucesso!</p>';
+      let alerta = reserva < 0 
+        ? '<p class="alerta">⚠️ Gasto maior que a entrada!</p>' 
+        : reserva === 0 
+          ? '<p class="alerta">⚠️ Sem sobras este mês!</p>' 
+          : '<p class="verde">✅ Reserva recebida com sucesso!</p>';
 
       document.getElementById("resultado").innerHTML = `
-        <h3>Resultado:</h3>
-        <p><strong>Total de Entradas:</strong> R$ ${entradaTotal.toFixed(2)}</p>
-        <p><strong>Dízimo:</strong> R$ ${dizimo.toFixed(2)}</p>
-        <p><strong>Alimentação:</strong> R$ ${alimentacao.toFixed(2)}</p>
-        <p><strong>Contas da casa:</strong> R$ ${contas.toFixed(2)}</p>
-        <p><strong>Reserva:</strong> R$ ${reserva.toFixed(2)}</p>
+        <h3>Resumo Financeiro</h3>
+        <div class="valores">
+          <p><strong>Entradas Totais:</strong> R$ ${entradaTotal.toFixed(2)}</p>
+          <p><strong>1️⃣ Dízimo (10%):</strong> R$ ${dizimo.toFixed(2)}</p>
+          <p><strong>2️⃣ Alimentação (R$300 x ${semanas} semanas):</strong> R$ ${alimentacao.toFixed(2)}</p>
+          <p><strong>3️⃣ Contas da casa:</strong> R$ ${contas.toFixed(2)}</p>
+          <p><strong>4️⃣ Reserva:</strong> R$ ${reserva.toFixed(2)}</p>
+        </div>
         ${alerta}
       `;
     }
