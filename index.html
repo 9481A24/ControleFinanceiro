@@ -3,107 +3,222 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador Financeiro Diário - 4 Pontes</title>
+  <title>Controle Financeiro</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #f2f2f2;
     }
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 500px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    input, button {
+      margin: 6px 4px 6px 0;
+      padding: 14px 22px;
+      font-size: 18px;
+      border-radius: 6px;
+      border: none;
     }
-    input, button, textarea {
-      padding: 10px;
-      margin: 10px 0;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
+    button {
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 1px 2px 4px rgba(0,0,0,0.1);
     }
-    h2, h3 {
-      text-align: center;
+    button:active {
+      transform: scale(0.98);
     }
-    .result {
-      margin-top: 20px;
-    }
-    .alerta {
-      color: red;
-      font-weight: bold;
-      text-align: center;
-    }
-    .verde {
-      color: green;
-      font-weight: bold;
-      text-align: center;
-    }
-    .valores {
+    button.adicionar { background-color: #1976D2; color: white; }
+    button.mostrar { background-color: #757575; color: white; }
+    button.limpar { background-color: #d32f2f; color: white; }
+    button.calcular { background-color: #388e3c; color: white; }
+    ul { list-style: none; padding-left: 15px; }
+    #listaValores li, #divisao ul li {
       background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      margin-top: 15px;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      border-left: 4px solid #1976D2;
+      font-size: 17px;
     }
-    .valores p {
-      margin: 5px 0;
-      font-size: 16px;
-    }
+    .verde { color: #2E7D32; font-weight: bold; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Simulador Financeiro - Entradas Diárias</h2>
-    <label>Entradas diárias (separadas por vírgula):</label>
-    <textarea id="entradas" rows="4" placeholder="Ex: 200, 300, , 150, 1000"></textarea>
-    <label>Nº de semanas no mês:</label>
-    <input type="number" id="semanas" value="4" />
-    <button onclick="calcular()">Calcular</button>
-
-    <div class="result" id="resultado"></div>
-  </div>
+  <h2>📆 Ganhos até o fim do ano (145 dias úteis)</h2>
+  <input type="number" id="valorDiario" placeholder="Valor por dia (ex: 150)" step="0.01" />
+  <button class="calcular" onclick="calcularGanho()">Calcular Ganho</button>
+  <p id="resultadoGanho" style="font-weight: bold;"></p>
+  <hr>
+  <h2>📋 Controle Financeiro</h2>
+  <input type="date" id="data" />
+  <input type="text" id="descricao" placeholder="Descrição da origem" />
+  <input type="number" id="valor" placeholder="Digite um valor" step="0.01" />
+  <button class="adicionar" onclick="adicionarValor()">Adicionar</button>
+  <button class="mostrar" onclick="alternarLista()">👁 Mostrar/Ocultar Valores</button>
+  <button class="limpar" onclick="limparHistorico()">🧹 Limpar Histórico</button>
+  <h3>Valores adicionados:</h3>
+  <ul id="listaValores" style="display: none;"></ul>
+  <h3>Total: R$ <span id="total">0.00</span></h3>
+  <h3>Divisão em porcentagens:</h3>
+  <div id="divisao"></div>
+  <h3>💸 Controle de Empréstimos (Investimento)</h3>
+  <input type="text" id="nomePessoa" placeholder="Nome da pessoa" />
+  <input type="number" id="valorEmprestimo" placeholder="Valor do empréstimo" step="0.01" />
+  <button onclick="emprestarDoInvestimento()">💸 Emprestar do Investimento</button>
+  <ul id="listaEmprestimos"></ul>
 
   <script>
-    function calcular() {
-      const entradasTexto = document.getElementById("entradas").value;
-      const semanas = parseInt(document.getElementById("semanas").value);
-
-      if (!entradasTexto || isNaN(semanas)) {
-        alert("Por favor, preencha todos os campos corretamente.");
+    function calcularGanho() {
+      const valor = parseFloat(document.getElementById("valorDiario").value);
+      if (isNaN(valor) || valor <= 0) {
+        document.getElementById("resultadoGanho").innerText = "❌ Digite um valor válido.";
         return;
       }
-
-      const valores = entradasTexto.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
-      const entradaTotal = valores.reduce((acc, val) => acc + val, 0);
-
-      const dizimo = entradaTotal * 0.10;
-      const alimentacao = semanas * 300;
-      const contas = 1300;
-      const reserva = entradaTotal - (dizimo + alimentacao + contas);
-
-      let alerta = reserva < 0 
-        ? '<p class="alerta">⚠️ Gasto maior que a entrada!</p>' 
-        : reserva === 0 
-          ? '<p class="alerta">⚠️ Sem sobras este mês!</p>' 
-          : '<p class="verde">✅ Reserva recebida com sucesso!</p>';
-
-      document.getElementById("resultado").innerHTML = `
-        <h3>Resumo Financeiro</h3>
-        <div class="valores">
-          <p><strong>Entradas Totais:</strong> R$ ${entradaTotal.toFixed(2)}</p>
-          <p><strong>1️⃣ Dízimo (10%):</strong> R$ ${dizimo.toFixed(2)}</p>
-          <p><strong>2️⃣ Alimentação (R$300 x ${semanas} semanas):</strong> R$ ${alimentacao.toFixed(2)}</p>
-          <p><strong>3️⃣ Contas da casa:</strong> R$ ${contas.toFixed(2)}</p>
-          <p><strong>4️⃣ Reserva:</strong> R$ ${reserva.toFixed(2)}</p>
-        </div>
-        ${alerta}
-      `;
+      const resultado = valor * 145;
+      document.getElementById("resultadoGanho").innerText = `💰 Ganho estimado: R$ ${resultado.toFixed(2)} em 145 dias úteis.`;
     }
+
+    let entradas = [];
+    let mostrar = false;
+    const porcentagens = [10, 30, 30, 30];
+    const nomes = ["Dízimo", "Aluguel agua luz celular", "Investimento", "Conta Alimentacao"];
+    let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
+
+    function salvarEntradas() {
+      localStorage.setItem('entradas', JSON.stringify(entradas));
+    }
+
+    function carregarEntradas() {
+      const dados = localStorage.getItem('entradas');
+      if (dados) entradas = JSON.parse(dados);
+    }
+
+    function salvarInvestimento(novoValor) {
+      const hoje = new Date().toISOString();
+      let dadosAntigos = carregarInvestimento();
+      if (!dadosAntigos) dadosAntigos = { valorInicial: 0, data: hoje };
+      const valorAtualizado = dadosAntigos.valorInicial + novoValor;
+      const dados = { valorInicial: valorAtualizado, data: hoje };
+      localStorage.setItem('investimento', JSON.stringify(dados));
+    }
+
+    function carregarInvestimento() {
+      const dados = localStorage.getItem('investimento');
+      return dados ? JSON.parse(dados) : null;
+    }
+
+    function calcularInvestimentoAtualizado() {
+      const dados = carregarInvestimento();
+      if (!dados) return 0;
+      const valorInicial = dados.valorInicial;
+      const dataSalva = new Date(dados.data);
+      const hoje = new Date();
+      const dias = Math.floor((hoje - dataSalva) / (1000 * 60 * 60 * 24));
+      return dias <= 0 ? valorInicial : valorInicial * Math.pow(1 + 0.10, dias);
+    }
+
+    function formatarData(dataStr) {
+      const d = new Date(dataStr);
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    function atualizarLista() {
+      const lista = document.getElementById('listaValores');
+      lista.innerHTML = '';
+      entradas.forEach(({ data, descricao, valor }) => {
+        const li = document.createElement('li');
+        li.textContent = `[${formatarData(data)}] ${descricao}: R$ ${valor.toFixed(2)}`;
+        lista.appendChild(li);
+      });
+    }
+
+    function atualizarSoma() {
+      const total = entradas.reduce((acc, entrada) => acc + entrada.valor, 0);
+      document.getElementById('total').textContent = total.toFixed(2);
+      atualizarDivisao(total);
+    }
+
+    function atualizarDivisao(total) {
+      let html = '<ul>';
+      porcentagens.forEach((p, i) => {
+        let valor = total * (p / 100);
+        if (nomes[i] === "Investimento") valor = calcularInvestimentoAtualizado();
+        html += `<li>${nomes[i]}: R$ ${valor.toFixed(2)} (${p}%)</li>`;
+      });
+      html += '</ul>';
+      document.getElementById('divisao').innerHTML = html;
+    }
+
+    function adicionarValor() {
+      const dataInput = document.getElementById('data');
+      const descInput = document.getElementById('descricao');
+      const valorInput = document.getElementById('valor');
+      const data = dataInput.value;
+      const descricao = descInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      if (!data || !descricao || isNaN(valor) || valor <= 0) return alert("Preencha todos os campos corretamente.");
+      entradas.push({ data, descricao, valor });
+      salvarEntradas();
+      salvarInvestimento(valor);
+      dataInput.value = new Date().toISOString().split('T')[0];
+      descInput.value = '';
+      valorInput.value = '';
+      atualizarLista();
+      atualizarSoma();
+    }
+
+    function alternarLista() {
+      mostrar = !mostrar;
+      document.getElementById('listaValores').style.display = mostrar ? 'block' : 'none';
+    }
+
+    function limparHistorico() {
+      if (confirm("Tem certeza que deseja apagar todo o histórico?")) {
+        localStorage.removeItem('entradas');
+        entradas = [];
+        atualizarLista();
+        atualizarSoma();
+        alert("Histórico apagado com sucesso!");
+      }
+    }
+
+    function emprestarDoInvestimento() {
+      const nome = document.getElementById('nomePessoa').value.trim();
+      const valor = parseFloat(document.getElementById('valorEmprestimo').value);
+      if (!nome || isNaN(valor) || valor <= 0) return alert("Preencha corretamente o nome e o valor do empréstimo.");
+      salvarInvestimento(-valor);
+      emprestimos.push({ nome, valor });
+      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+      document.getElementById('nomePessoa').value = '';
+      document.getElementById('valorEmprestimo').value = '';
+      atualizarListaEmprestimos();
+      atualizarSoma();
+    }
+
+    function atualizarListaEmprestimos() {
+      const lista = document.getElementById('listaEmprestimos');
+      lista.innerHTML = '';
+      emprestimos.forEach((emp, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `${emp.nome} deve R$ ${emp.valor.toFixed(2)} <button onclick="receberEmprestimo(${index})">Receber</button>`;
+        lista.appendChild(li);
+      });
+    }
+
+    function receberEmprestimo(index) {
+      const valor = emprestimos[index].valor;
+      salvarInvestimento(valor);
+      emprestimos.splice(index, 1);
+      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
+      atualizarListaEmprestimos();
+      atualizarSoma();
+    }
+
+    window.onload = () => {
+      const dataInput = document.getElementById('data');
+      dataInput.value = new Date().toISOString().split('T')[0];
+      carregarEntradas();
+      atualizarLista();
+      atualizarSoma();
+      atualizarListaEmprestimos();
+    };
   </script>
 </body>
 </html>
