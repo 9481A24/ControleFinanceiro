@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Divisão Financeira - 4 Pontes</title>
+  <title>Simulador Financeiro Diário - 4 Pontes</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,16 +14,17 @@
       background: white;
       padding: 20px;
       border-radius: 10px;
-      max-width: 400px;
+      max-width: 500px;
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    input, button {
+    input, button, textarea {
       padding: 10px;
       margin: 10px 0;
       width: 100%;
       border: 1px solid #ccc;
       border-radius: 5px;
+      box-sizing: border-box;
     }
     h2 {
       text-align: center;
@@ -40,9 +40,9 @@
 </head>
 <body>
   <div class="box">
-    <h2>Simulador Financeiro - 4 Pontes</h2>
-    <label>Entrada do mês (R$):</label>
-    <input type="number" id="entrada" placeholder="Ex: 3000" />
+    <h2>Simulador Financeiro - Entradas Diárias</h2>
+    <label>Entradas diárias (separadas por vírgula):</label>
+    <textarea id="entradas" rows="4" placeholder="Ex: 200, 300, , 150, 1000"></textarea>
     <label>Nº de semanas no mês:</label>
     <input type="number" id="semanas" value="4" />
     <button onclick="calcular()">Calcular</button>
@@ -52,23 +52,27 @@
 
   <script>
     function calcular() {
-      const entrada = parseFloat(document.getElementById("entrada").value);
+      const entradasTexto = document.getElementById("entradas").value;
       const semanas = parseInt(document.getElementById("semanas").value);
 
-      if (isNaN(entrada) || isNaN(semanas)) {
+      if (!entradasTexto || isNaN(semanas)) {
         alert("Por favor, preencha todos os campos corretamente.");
         return;
       }
 
-      const dizimo = entrada * 0.10;
+      const valores = entradasTexto.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+      const entradaTotal = valores.reduce((acc, val) => acc + val, 0);
+
+      const dizimo = entradaTotal * 0.10;
       const alimentacao = semanas * 300;
       const contas = 1300;
-      const reserva = entrada - (dizimo + alimentacao + contas);
+      const reserva = entradaTotal - (dizimo + alimentacao + contas);
 
-      let alerta = reserva < 0 ? '<p class="alerta">⚠️ Alerta: Gasto maior que a entrada!</p>' : reserva === 0 ? '<p class="alerta">⚠️ Sem sobras este mês!</p>' : '<p style="color:green">✅ Reserva recebida com sucesso!</p>';
+      let alerta = reserva < 0 ? '<p class="alerta">⚠️ Gasto maior que a entrada!</p>' : reserva === 0 ? '<p class="alerta">⚠️ Sem sobras este mês!</p>' : '<p style="color:green">✅ Reserva recebida com sucesso!</p>';
 
       document.getElementById("resultado").innerHTML = `
         <h3>Resultado:</h3>
+        <p><strong>Total de Entradas:</strong> R$ ${entradaTotal.toFixed(2)}</p>
         <p><strong>Dízimo:</strong> R$ ${dizimo.toFixed(2)}</p>
         <p><strong>Alimentação:</strong> R$ ${alimentacao.toFixed(2)}</p>
         <p><strong>Contas da casa:</strong> R$ ${contas.toFixed(2)}</p>
@@ -79,3 +83,4 @@
   </script>
 </body>
 </html>
+
