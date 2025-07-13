@@ -2,224 +2,229 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Controle Financeiro</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    input, button {
-      margin: 6px 4px 6px 0;
-      padding: 14px 22px;
-      font-size: 18px;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      box-shadow: 1px 2px 4px rgba(0,0,0,0.1);
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    button.adicionar { background-color: #1976D2; color: white; }
-    button.mostrar { background-color: #757575; color: white; }
-    button.limpar { background-color: #d32f2f; color: white; }
-    button.calcular { background-color: #388e3c; color: white; }
-    ul { list-style: none; padding-left: 15px; }
-    #listaValores li, #divisao ul li {
-      background: #f9f9f9;
-      padding: 6px 10px;
-      margin-bottom: 4px;
-      border-radius: 4px;
-      border-left: 4px solid #1976D2;
-      font-size: 17px;
-    }
-    .verde { color: #2E7D32; font-weight: bold; }
-  </style>
+<meta charset="UTF-8" />
+<title>Entradas Financeiras</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    padding: 20px;
+    color: #333;
+    max-width: 720px;
+    margin: auto;
+  }
+  nav {
+    margin-bottom: 20px;
+  }
+  nav a {
+    margin-right: 15px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  h2, h3 {
+    text-align: center;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input[type="text"],
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: background-color .3s;
+  }
+  button:hover {
+    background-color: #218838;
+  }
+  .entrada-bloco {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .entrada-bloco > div {
+    flex: 1 1 48%;
+    min-width: 300px;
+  }
+</style>
 </head>
 <body>
-  <h2>📆 Ganhos até o fim do ano (145 dias úteis)</h2>
-  <input type="number" id="valorDiario" placeholder="Valor por dia (ex: 150)" step="0.01" />
-  <button class="calcular" onclick="calcularGanho()">Calcular Ganho</button>
-  <p id="resultadoGanho" style="font-weight: bold;"></p>
-  <hr>
-  <h2>📋 Controle Financeiro</h2>
-  <input type="date" id="data" />
-  <input type="text" id="descricao" placeholder="Descrição da origem" />
-  <input type="number" id="valor" placeholder="Digite um valor" step="0.01" />
-  <button class="adicionar" onclick="adicionarValor()">Adicionar</button>
-  <button class="mostrar" onclick="alternarLista()">👁 Mostrar/Ocultar Valores</button>
-  <button class="limpar" onclick="limparHistorico()">🧹 Limpar Histórico</button>
-  <h3>Valores adicionados:</h3>
-  <ul id="listaValores" style="display: none;"></ul>
-  <h3>Total: R$ <span id="total">0.00</span></h3>
-  <h3>Divisão em porcentagens:</h3>
-  <div id="divisao"></div>
-  <h3>💸 Controle de Empréstimos (Investimento)</h3>
-  <input type="text" id="nomePessoa" placeholder="Nome da pessoa" />
-  <input type="number" id="valorEmprestimo" placeholder="Valor do empréstimo" step="0.01" />
-  <button onclick="emprestarDoInvestimento()">💸 Emprestar do Investimento</button>
-  <ul id="listaEmprestimos"></ul>
 
-  <script>
-    function calcularGanho() {
-      const valor = parseFloat(document.getElementById("valorDiario").value);
-      if (isNaN(valor) || valor <= 0) {
-        document.getElementById("resultadoGanho").innerText = "❌ Digite um valor válido.";
-        return;
-      }
-      const resultado = valor * 145;
-      document.getElementById("resultadoGanho").innerText = `💰 Ganho estimado: R$ ${resultado.toFixed(2)} em 145 dias úteis.`;
-    }
+<nav>
+  <a href="entradas.html">Entradas</a> |
+  <a href="resumo.html">Resumo</a> |
+  <a href="historico.html">Histórico</a>
+</nav>
 
-    let entradas = [];
-    let mostrar = false;
-    const porcentagens = [10, 30, 30, 30];
-    const nomes = ["Dízimo", "Aluguel agua luz celular", "Investimento", "Conta Alimentacao"];
-    let emprestimos = JSON.parse(localStorage.getItem('emprestimos')) || [];
+<h2>📒 Registro de Entradas</h2>
 
-    function salvarEntradas() {
-      localStorage.setItem('entradas', JSON.stringify(entradas));
-    }
+<h3>Entradas com data digitada</h3>
+<div class="entrada-bloco">
+  <div>
+    <label>📝 Entrada 1 Origem:</label>
+    <input type="text" id="origem1" value="Cliente X" />
+    <label>📅 Data Digitada:</label>
+    <input type="date" id="data1" />
+    <label>💵 Valor (R$):</label>
+    <input type="number" id="valor1" step="0.01" value="200" />
+  </div>
+  <div>
+    <label>📝 Entrada 2 Origem:</label>
+    <input type="text" id="origem2" value="Cliente Y" />
+    <label>📅 Data Digitada:</label>
+    <input type="date" id="data2" />
+    <label>💵 Valor (R$):</label>
+    <input type="number" id="valor2" step="0.01" value="350" />
+  </div>
+</div>
 
-    function carregarEntradas() {
-      const dados = localStorage.getItem('entradas');
-      if (dados) entradas = JSON.parse(dados);
-    }
+<h3>Entradas com data programada fixa (Altere datas no código)</h3>
+<div class="entrada-bloco">
+  <div>
+    <label>📝 Entrada 3 Origem:</label>
+    <input type="text" id="origem3" value="Cliente A" />
+    <label>💵 Valor (R$):</label>
+    <input type="number" id="valor3" step="0.01" value="300" />
+  </div>
+  <div>
+    <label>📝 Entrada 4 Origem:</label>
+    <input type="text" id="origem4" value="Cliente B" />
+    <label>💵 Valor (R$):</label>
+    <input type="number" id="valor4" step="0.01" value="300" />
+  </div>
+</div>
 
-    function salvarInvestimento(novoValor) {
-      const hoje = new Date().toISOString();
-      let dadosAntigos = carregarInvestimento();
-      if (!dadosAntigos) dadosAntigos = { valorInicial: 0, data: hoje };
-      const valorAtualizado = dadosAntigos.valorInicial + novoValor;
-      const dados = { valorInicial: valorAtualizado, data: hoje };
-      localStorage.setItem('investimento', JSON.stringify(dados));
-    }
+<button onclick="registrarEntradas()">Registrar Entradas</button>
 
-    function carregarInvestimento() {
-      const dados = localStorage.getItem('investimento');
-      return dados ? JSON.parse(dados) : null;
-    }
+<h3>Importar entradas de arquivo CSV</h3>
+<input type="file" id="fileInput" accept=".csv" />
+<button onclick="importarCSV()">Importar CSV</button>
 
-    function calcularInvestimentoAtualizado() {
-      const dados = carregarInvestimento();
-      if (!dados) return 0;
-      const valorInicial = dados.valorInicial;
-      const dataSalva = new Date(dados.data);
-      const hoje = new Date();
-      const dias = Math.floor((hoje - dataSalva) / (1000 * 60 * 60 * 24));
-      return dias <= 0 ? valorInicial : valorInicial * Math.pow(1 + 0.10, dias);
-    }
+<script>
+  const datasProgramadas = {
+    3: '2025-07-15',
+    4: '2025-07-20'
+  };
 
-    function formatarData(dataStr) {
-      const d = new Date(dataStr);
-      return d.toLocaleDateString('pt-BR');
-    }
+  function formatDataHora(d) {
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+  }
 
-    function atualizarLista() {
-      const lista = document.getElementById('listaValores');
-      lista.innerHTML = '';
-      entradas.forEach(({ data, descricao, valor }) => {
-        const li = document.createElement('li');
-        li.textContent = `[${formatarData(data)}] ${descricao}: R$ ${valor.toFixed(2)}`;
-        lista.appendChild(li);
-      });
-    }
+  function salvarDadosLocal(total, historico, divisaoHTML) {
+    localStorage.setItem('total', total.toFixed(2));
+    localStorage.setItem('historico', historico);
+    localStorage.setItem('divisao', divisaoHTML);
+  }
 
-    function atualizarSoma() {
-      const total = entradas.reduce((acc, entrada) => acc + entrada.valor, 0);
-      document.getElementById('total').textContent = total.toFixed(2);
-      atualizarDivisao(total);
-    }
+  function carregarDadosSalvos() {
+    // Aqui não usado, será no resumo e histórico
+  }
 
-    function atualizarDivisao(total) {
-      let html = '<ul>';
-      porcentagens.forEach((p, i) => {
-        let valor = total * (p / 100);
-        if (nomes[i] === "Investimento") valor = calcularInvestimentoAtualizado();
-        html += `<li>${nomes[i]}: R$ ${valor.toFixed(2)} (${p}%)</li>`;
-      });
-      html += '</ul>';
-      document.getElementById('divisao').innerHTML = html;
-    }
+  function registrarEntradas() {
+    const hoje = new Date();
+    let total = parseFloat(localStorage.getItem('total')) || 0;
+    let historicoNovo = '';
 
-    function adicionarValor() {
-      const dataInput = document.getElementById('data');
-      const descInput = document.getElementById('descricao');
-      const valorInput = document.getElementById('valor');
-      const data = dataInput.value;
-      const descricao = descInput.value.trim();
-      const valor = parseFloat(valorInput.value);
-      if (!data || !descricao || isNaN(valor) || valor <= 0) return alert("Preencha todos os campos corretamente.");
-      entradas.push({ data, descricao, valor });
-      salvarEntradas();
-      salvarInvestimento(valor);
-      dataInput.value = new Date().toISOString().split('T')[0];
-      descInput.value = '';
-      valorInput.value = '';
-      atualizarLista();
-      atualizarSoma();
-    }
+    for(let i =1; i <=2; i++) {
+      const origem = document.getElementById(`origem${i}`).value.trim();
+      const valor = parseFloat(document.getElementById(`valor${i}`).value);
+      const dataStr = document.getElementById(`data${i}`).value;
 
-    function alternarLista() {
-      mostrar = !mostrar;
-      document.getElementById('listaValores').style.display = mostrar ? 'block' : 'none';
-    }
+      if(!origem || isNaN(valor) || valor <= 0 || !dataStr) continue;
 
-    function limparHistorico() {
-      if (confirm("Tem certeza que deseja apagar todo o histórico?")) {
-        localStorage.removeItem('entradas');
-        entradas = [];
-        atualizarLista();
-        atualizarSoma();
-        alert("Histórico apagado com sucesso!");
+      const dataEntrada = new Date(dataStr);
+      if(dataEntrada <= hoje) {
+        total += valor;
+        historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
       }
     }
 
-    function emprestarDoInvestimento() {
-      const nome = document.getElementById('nomePessoa').value.trim();
-      const valor = parseFloat(document.getElementById('valorEmprestimo').value);
-      if (!nome || isNaN(valor) || valor <= 0) return alert("Preencha corretamente o nome e o valor do empréstimo.");
-      salvarInvestimento(-valor);
-      emprestimos.push({ nome, valor });
-      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-      document.getElementById('nomePessoa').value = '';
-      document.getElementById('valorEmprestimo').value = '';
-      atualizarListaEmprestimos();
-      atualizarSoma();
+    for(let i = 3; i <=4; i++) {
+      const origem = document.getElementById(`origem${i}`).value.trim();
+      const valor = parseFloat(document.getElementById(`valor${i}`).value);
+      const dataStr = datasProgramadas[i];
+
+      if(!origem || isNaN(valor) || valor <= 0 || !dataStr) continue;
+
+      const dataEntrada = new Date(dataStr);
+      if(dataEntrada <= hoje) {
+        total += valor;
+        historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
+      }
     }
 
-    function atualizarListaEmprestimos() {
-      const lista = document.getElementById('listaEmprestimos');
-      lista.innerHTML = '';
-      emprestimos.forEach((emp, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `${emp.nome} deve R$ ${emp.valor.toFixed(2)} <button onclick="receberEmprestimo(${index})">Receber</button>`;
-        lista.appendChild(li);
+    // Atualiza localStorage
+    let historicoExistente = localStorage.getItem('historico') || '';
+    historicoExistente += historicoNovo;
+    localStorage.setItem('historico', historicoExistente);
+    localStorage.setItem('total', total.toFixed(2));
+
+    alert('Entradas registradas com sucesso!\n\nTotal atualizado: R$ ' + total.toFixed(2));
+  }
+
+  // Função para importar CSV e lançar as entradas
+  function importarCSV() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) {
+      alert('Selecione um arquivo CSV para importar.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const texto = e.target.result;
+      const linhas = texto.split('\n');
+      let total = parseFloat(localStorage.getItem('total')) || 0;
+      let historicoNovo = '';
+
+      linhas.forEach(linha => {
+        // Espera CSV com formato: origem,data(yyyy-mm-dd),valor
+        const colunas = linha.trim().split(',');
+        if (colunas.length < 3) return;
+        const origem = colunas[0].trim();
+        const dataStr = colunas[1].trim();
+        const valor = parseFloat(colunas[2].trim());
+        if (!origem || isNaN(valor) || valor <= 0 || !dataStr) return;
+        const dataEntrada = new Date(dataStr);
+        const hoje = new Date();
+        if (dataEntrada <= hoje) {
+          total += valor;
+          historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
+        }
       });
-    }
 
-    function receberEmprestimo(index) {
-      const valor = emprestimos[index].valor;
-      salvarInvestimento(valor);
-      emprestimos.splice(index, 1);
-      localStorage.setItem('emprestimos', JSON.stringify(emprestimos));
-      atualizarListaEmprestimos();
-      atualizarSoma();
-    }
+      // Atualiza localStorage
+      let historicoExistente = localStorage.getItem('historico') || '';
+      historicoExistente += historicoNovo;
+      localStorage.setItem('historico', historicoExistente);
+      localStorage.setItem('total', total.toFixed(2));
 
-    window.onload = () => {
-      const dataInput = document.getElementById('data');
-      dataInput.value = new Date().toISOString().split('T')[0];
-      carregarEntradas();
-      atualizarLista();
-      atualizarSoma();
-      atualizarListaEmprestimos();
+      alert('CSV importado com sucesso!\n\nTotal atualizado: R$ ' + total.toFixed(2));
     };
-  </script>
+    reader.readAsText(file);
+  }
+</script>
+
 </body>
 </html>
 
