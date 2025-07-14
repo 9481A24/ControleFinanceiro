@@ -1,57 +1,58 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Resumo Financeiro</title>
-<style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f0f2f5;
-    padding: 20px;
-    color: #333;
-    max-width: 720px;
-    margin: auto;
-  }
-  nav {
-    margin-bottom: 20px;
-  }
-  nav a {
-    margin-right: 15px;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  nav a:hover {
-    text-decoration: underline;
-  }
-  h2, h3 {
-    text-align: center;
-  }
-  ul {
-    list-style: none;
-    padding-left: 0;
-    font-size: 1.1em;
-  }
-  ul li {
-    margin: 8px 0;
-    display: flex;
-    justify-content: space-between;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  #investimento-valor {
-    user-select: none;
-    font-weight: bold;
-  }
-  #toggle-investimento {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    margin-left: 8px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Resumo Financeiro</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+      color: #333;
+      max-width: 720px;
+      margin: auto;
+    }
+    nav {
+      margin-bottom: 20px;
+    }
+    nav a {
+      margin-right: 15px;
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+      font-size: 1.1em;
+    }
+    ul li {
+      margin: 8px 0;
+      display: flex;
+      justify-content: space-between;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #investimento-valor {
+      user-select: none;
+      font-weight: bold;
+    }
+    #toggle-investimento {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      margin-left: 8px;
+    }
+  </style>
 </head>
 <body>
 
@@ -77,10 +78,31 @@
   </li>
 </ul>
 
-<script>
-  function carregarResumo() {
-    const totalStr = localStorage.getItem('total');
-    const total = totalStr ? parseFloat(totalStr) : 0;
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
+    authDomain: "controlefinanceiro-23fce.firebaseapp.com",
+    projectId: "controlefinanceiro-23fce",
+    storageBucket: "controlefinanceiro-23fce.appspot.com",
+    messagingSenderId: "967993151955",
+    appId: "1:967993151955:web:ac2711081550ee34519f26"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function carregarResumoFirebase() {
+    const docRef = doc(db, "financeiro", "resumo");
+    const docSnap = await getDoc(docRef);
+
+    let total = 0;
+    if (docSnap.exists()) {
+      total = parseFloat(docSnap.data().total || 0);
+    }
 
     document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
 
@@ -93,8 +115,7 @@
     document.getElementById('contas').textContent = `R$ ${contas.toFixed(2)}`;
     document.getElementById('alimentacao').textContent = `R$ ${alimentacao.toFixed(2)}`;
 
-    window.valorInvestimento = investimento; // guarda valor para botão
-
+    window.valorInvestimento = investimento;
     const investimentoElem = document.getElementById('investimento-valor');
     investimentoElem.textContent = '••••••••';
 
@@ -107,7 +128,7 @@
     });
   }
 
-  window.onload = carregarResumo;
+  carregarResumoFirebase();
 </script>
 
 </body>
