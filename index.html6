@@ -1,9 +1,11 @@
+fundador
+davi walker fernandes
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<title>Entradas Financeiras</title>
+<title>Entradas Financeiras - Sistema Completo com Busca por CPF</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -30,17 +32,19 @@
   }
   label {
     display: block;
-    margin-top: 15px;
+    margin-top: 12px;
     font-weight: bold;
   }
   input[type="text"],
   input[type="date"],
-  input[type="number"] {
+  input[type="number"],
+  select {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
     border-radius: 8px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
   }
   button {
     width: 100%;
@@ -66,6 +70,34 @@
     flex: 1 1 48%;
     min-width: 300px;
   }
+  #comprovante {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    display: none;
+  }
+  #comprovante h3 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  #comprovante .linha {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  #comprovante .linha strong {
+    font-weight: 600;
+  }
+  #comprovante-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  #comprovante-buttons button {
+    width: 48%;
+  }
 </style>
 </head>
 <body>
@@ -76,153 +108,226 @@
   <a href="historico.html">Histórico</a>
 </nav>
 
-<h2>📒 Registro de Entradas</h2>
+<h2>📒 Registrar Entrada Financeira Completa</h2>
 
-<h3>Entradas com data digitada</h3>
 <div class="entrada-bloco">
+
+  <!-- Dados do Cliente -->
   <div>
-    <label>📝 Entrada 1 Origem:</label>
-    <input type="text" id="origem1" value="Cliente X" />
-    <label>📅 Data Digitada:</label>
-    <input type="date" id="data1" />
-    <label>💵 Valor (R$):</label>
-    <input type="number" id="valor1" step="0.01" value="200" />
+    <h3>Dados do Cliente</h3>
+    <label>Nome do Cliente:</label>
+    <input type="text" id="clienteNome" placeholder="Nome completo" />
+
+    <label>CPF do Cliente:</label>
+    <input type="text" id="clienteCPF" placeholder="CPF (somente números)" maxlength="11" 
+      onblur="buscarClientePorCPF(this.value.trim())" />
+
+    <label>RG do Cliente:</label>
+    <input type="text" id="clienteRG" placeholder="RG (somente números)" maxlength="15" />
   </div>
+
+  <!-- Dados da Entrada -->
   <div>
-    <label>📝 Entrada 2 Origem:</label>
-    <input type="text" id="origem2" value="Cliente Y" />
-    <label>📅 Data Digitada:</label>
-    <input type="date" id="data2" />
-    <label>💵 Valor (R$):</label>
-    <input type="number" id="valor2" step="0.01" value="350" />
+    <h3>Dados da Entrada</h3>
+    <label>Data da Entrada:</label>
+    <input type="date" id="entradaData" />
+
+    <label>Valor (R$):</label>
+    <input type="number" id="entradaValor" step="0.01" min="0" />
+
+    <label>Forma de Pagamento:</label>
+    <select id="formaPagamento">
+      <option value="">-- Selecione --</option>
+      <option value="Dinheiro">Dinheiro</option>
+      <option value="Pix">Pix</option>
+      <option value="Cartão Crédito">Cartão Crédito</option>
+      <option value="Cartão Débito">Cartão Débito</option>
+    </select>
+
+    <label>Parcelas (se cartão crédito, deixe 1 se não):</label>
+    <input type="number" id="parcelas" min="1" max="36" value="1" />
+  </div>
+
+</div>
+
+<!-- Dados do Prestador de Serviço -->
+<h3>Dados do Prestador de Serviço</h3>
+<label>Nome do Prestador:</label>
+<input type="text" id="prestadorNome" placeholder="Nome completo" />
+
+<label>CPF ou CNPJ do Prestador:</label>
+<input type="text" id="prestadorCPF" placeholder="CPF ou CNPJ (somente números)" maxlength="14" />
+
+<label>Endereço do Prestador:</label>
+<input type="text" id="prestadorEndereco" placeholder="Endereço completo" />
+
+<button onclick="registrarEntrada()">Confirmar Entrada</button>
+
+<!-- Comprovante -->
+<div id="comprovante">
+  <h3>Comprovante de Entrada</h3>
+  <div id="dadosComprovante"></div>
+  <div id="comprovante-buttons">
+    <button onclick="imprimirComprovante()">🖨️ Imprimir</button>
+    <button onclick="fecharComprovante()">OK</button>
   </div>
 </div>
 
-<h3>Entradas com data programada fixa (Altere datas no código)</h3>
-<div class="entrada-bloco">
-  <div>
-    <label>📝 Entrada 3 Origem:</label>
-    <input type="text" id="origem3" value="Cliente A" />
-    <label>💵 Valor (R$):</label>
-    <input type="number" id="valor3" step="0.01" value="300" />
-  </div>
-  <div>
-    <label>📝 Entrada 4 Origem:</label>
-    <input type="text" id="origem4" value="Cliente B" />
-    <label>💵 Valor (R$):</label>
-    <input type="number" id="valor4" step="0.01" value="300" />
-  </div>
-</div>
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, Timestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<button onclick="registrarEntradas()">Registrar Entradas</button>
-
-<h3>Importar entradas de arquivo CSV</h3>
-<input type="file" id="fileInput" accept=".csv" />
-<button onclick="importarCSV()">Importar CSV</button>
-
-<script>
-  const datasProgramadas = {
-    3: '2025-07-15',
-    4: '2025-07-20'
+  const firebaseConfig = {
+    apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
+    authDomain: "controlefinanceiro-23fce.firebaseapp.com",
+    projectId: "controlefinanceiro-23fce",
+    storageBucket: "controlefinanceiro-23fce.appspot.com",
+    messagingSenderId: "967993151955",
+    appId: "1:967993151955:web:ac2711081550ee34519f26"
   };
 
-  function formatDataHora(d) {
-    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  function formatarData(data) {
+    return data.toLocaleDateString('pt-BR');
   }
 
-  function salvarDadosLocal(total, historico, divisaoHTML) {
-    localStorage.setItem('total', total.toFixed(2));
-    localStorage.setItem('historico', historico);
-    localStorage.setItem('divisao', divisaoHTML);
+  function formatarValor(valor) {
+    return `R$ ${valor.toFixed(2)}`;
   }
 
-  function carregarDadosSalvos() {
-    // Aqui não usado, será no resumo e histórico
+  function limparFormulario() {
+    document.getElementById('clienteNome').value = '';
+    document.getElementById('clienteCPF').value = '';
+    document.getElementById('clienteRG').value = '';
+    document.getElementById('entradaData').value = '';
+    document.getElementById('entradaValor').value = '';
+    document.getElementById('formaPagamento').value = '';
+    document.getElementById('parcelas').value = '1';
+    document.getElementById('prestadorNome').value = '';
+    document.getElementById('prestadorCPF').value = '';
+    document.getElementById('prestadorEndereco').value = '';
   }
 
-  function registrarEntradas() {
-    const hoje = new Date();
-    let total = parseFloat(localStorage.getItem('total')) || 0;
-    let historicoNovo = '';
+  window.buscarClientePorCPF = async function(cpf) {
+    if (!cpf) return;
 
-    for(let i =1; i <=2; i++) {
-      const origem = document.getElementById(`origem${i}`).value.trim();
-      const valor = parseFloat(document.getElementById(`valor${i}`).value);
-      const dataStr = document.getElementById(`data${i}`).value;
+    try {
+      const entradasRef = collection(db, "entradas_completas");
+      const q = query(entradasRef, where("clienteCPF", "==", cpf));
+      const querySnapshot = await getDocs(q);
 
-      if(!origem || isNaN(valor) || valor <= 0 || !dataStr) continue;
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const dados = doc.data();
 
-      const dataEntrada = new Date(dataStr);
-      if(dataEntrada <= hoje) {
-        total += valor;
-        historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
+        // Preenche os campos do cliente com os dados encontrados
+        document.getElementById('clienteNome').value = dados.clienteNome || '';
+        document.getElementById('clienteRG').value = dados.clienteRG || '';
+
+        // Opcional: preencher forma pagamento, prestador, etc, se quiser
+        // document.getElementById('formaPagamento').value = dados.formaPagamento || '';
+        // document.getElementById('prestadorNome').value = dados.prestadorNome || '';
+        // ...
+
+        alert(`Dados do cliente "${dados.clienteNome}" carregados pelo CPF.`);
+      } else {
+        alert('Cliente não encontrado com este CPF.');
       }
+    } catch (erro) {
+      alert('Erro ao buscar cliente: ' + erro.message);
     }
-
-    for(let i = 3; i <=4; i++) {
-      const origem = document.getElementById(`origem${i}`).value.trim();
-      const valor = parseFloat(document.getElementById(`valor${i}`).value);
-      const dataStr = datasProgramadas[i];
-
-      if(!origem || isNaN(valor) || valor <= 0 || !dataStr) continue;
-
-      const dataEntrada = new Date(dataStr);
-      if(dataEntrada <= hoje) {
-        total += valor;
-        historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
-      }
-    }
-
-    // Atualiza localStorage
-    let historicoExistente = localStorage.getItem('historico') || '';
-    historicoExistente += historicoNovo;
-    localStorage.setItem('historico', historicoExistente);
-    localStorage.setItem('total', total.toFixed(2));
-
-    alert('Entradas registradas com sucesso!\n\nTotal atualizado: R$ ' + total.toFixed(2));
   }
 
-  // Função para importar CSV e lançar as entradas
-  function importarCSV() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    if (!file) {
-      alert('Selecione um arquivo CSV para importar.');
+  window.registrarEntrada = async function() {
+    const clienteNome = document.getElementById('clienteNome').value.trim();
+    const clienteCPF = document.getElementById('clienteCPF').value.trim();
+    const clienteRG = document.getElementById('clienteRG').value.trim();
+    const entradaDataStr = document.getElementById('entradaData').value;
+    const entradaValor = parseFloat(document.getElementById('entradaValor').value);
+    const formaPagamento = document.getElementById('formaPagamento').value;
+    const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
+    const prestadorNome = document.getElementById('prestadorNome').value.trim();
+    const prestadorCPF = document.getElementById('prestadorCPF').value.trim();
+    const prestadorEndereco = document.getElementById('prestadorEndereco').value.trim();
+
+    if (!clienteNome || !clienteCPF || !entradaDataStr || isNaN(entradaValor) || entradaValor <= 0 || !formaPagamento || parcelas < 1 || !prestadorNome || !prestadorCPF) {
+      alert('Por favor, preencha todos os campos obrigatórios corretamente.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const texto = e.target.result;
-      const linhas = texto.split('\n');
-      let total = parseFloat(localStorage.getItem('total')) || 0;
-      let historicoNovo = '';
 
-      linhas.forEach(linha => {
-        // Espera CSV com formato: origem,data(yyyy-mm-dd),valor
-        const colunas = linha.trim().split(',');
-        if (colunas.length < 3) return;
-        const origem = colunas[0].trim();
-        const dataStr = colunas[1].trim();
-        const valor = parseFloat(colunas[2].trim());
-        if (!origem || isNaN(valor) || valor <= 0 || !dataStr) return;
-        const dataEntrada = new Date(dataStr);
-        const hoje = new Date();
-        if (dataEntrada <= hoje) {
-          total += valor;
-          historicoNovo += `📅 ${formatDataHora(new Date())}\nCliente: ${origem}\nValor: R$ ${valor.toFixed(2)}\n------------------------------\n`;
-        }
+    const entradaData = new Date(entradaDataStr);
+    if (entradaData > new Date()) {
+      alert('Data da entrada não pode ser futura.');
+      return;
+    }
+
+    let valorParcela = entradaValor;
+    let valorRestante = 0;
+    if (formaPagamento === "Cartão Crédito" && parcelas > 1) {
+      valorParcela = entradaValor / parcelas;
+      valorRestante = entradaValor - valorParcela;
+    }
+
+    try {
+      await addDoc(collection(db, "entradas_completas"), {
+        clienteNome,
+        clienteCPF,
+        clienteRG,
+        entradaData: Timestamp.fromDate(entradaData),
+        entradaValor,
+        formaPagamento,
+        parcelas,
+        valorParcela,
+        valorRestante,
+        prestadorNome,
+        prestadorCPF,
+        prestadorEndereco,
+        criadoEm: Timestamp.now()
       });
 
-      // Atualiza localStorage
-      let historicoExistente = localStorage.getItem('historico') || '';
-      historicoExistente += historicoNovo;
-      localStorage.setItem('historico', historicoExistente);
-      localStorage.setItem('total', total.toFixed(2));
+      const comprovanteDiv = document.getElementById('comprovante');
+      const dadosDiv = document.getElementById('dadosComprovante');
+      dadosDiv.innerHTML = `
+        <div class="linha"><strong>Cliente:</strong> ${clienteNome}</div>
+        <div class="linha"><strong>CPF:</strong> ${clienteCPF}</div>
+        <div class="linha"><strong>RG:</strong> ${clienteRG || '-'}</div>
+        <div class="linha"><strong>Data Entrada:</strong> ${formatarData(entradaData)}</div>
+        <div class="linha"><strong>Valor Total:</strong> ${formatarValor(entradaValor)}</div>
+        <div class="linha"><strong>Forma Pagamento:</strong> ${formaPagamento}</div>
+        <div class="linha"><strong>Parcelas:</strong> ${parcelas}</div>
+        <div class="linha"><strong>Valor Parcela:</strong> ${formatarValor(valorParcela)}</div>
+        <div class="linha"><strong>Valor Restante:</strong> ${formatarValor(valorRestante)}</div>
+        <hr />
+        <div class="linha"><strong>Prestador Serviço:</strong> ${prestadorNome}</div>
+        <div class="linha"><strong>CPF/CNPJ Prestador:</strong> ${prestadorCPF}</div>
+        <div class="linha"><strong>Endereço Prestador:</strong> ${prestadorEndereco}</div>
+      `;
+      comprovanteDiv.style.display = 'block';
 
-      alert('CSV importado com sucesso!\n\nTotal atualizado: R$ ' + total.toFixed(2));
-    };
-    reader.readAsText(file);
-  }
+      limparFormulario();
+    } catch (erro) {
+      alert('Erro ao salvar no banco: ' + erro.message);
+    }
+  };
+
+  window.imprimirComprovante = function() {
+    const conteudo = document.getElementById('comprovante').innerHTML;
+    const janela = window.open('', '', 'width=600,height=600');
+    janela.document.write('<html><head><title>Imprimir Comprovante</title></head><body>');
+    janela.document.write(conteudo);
+    janela.document.write('</body></html>');
+    janela.document.close();
+    janela.focus();
+    janela.print();
+    janela.close();
+  };
+
+  window.fecharComprovante = function() {
+    document.getElementById('comprovante').style.display = 'none';
+  };
 </script>
 
 </body>
