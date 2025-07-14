@@ -1,5 +1,5 @@
 fundador
-davi walker fernandes
+davi walker
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -133,7 +133,8 @@ davi walker fernandes
     <input type="date" id="entradaData" />
 
     <label>Valor (R$):</label>
-    <input type="number" id="entradaValor" step="0.01" min="0" />
+    <input type="number" id="entradaValor" step="0.01" min="0" oninput="calcularImposto()" />
+    <small id="impostoTexto" style="color: #888;"></small>
 
     <label>Forma de Pagamento:</label>
     <select id="formaPagamento">
@@ -198,6 +199,13 @@ davi walker fernandes
     return `R$ ${valor.toFixed(2)}`;
   }
 
+  window.calcularImposto = function () {
+    const valor = parseFloat(document.getElementById('entradaValor').value);
+    const imposto = isNaN(valor) ? 0 : valor * 0.05;
+    document.getElementById('impostoTexto').innerText =
+      isNaN(valor) ? '' : `📌 Imposto estimado: R$ ${imposto.toFixed(2)} (5%)`;
+  }
+
   function limparFormulario() {
     document.getElementById('clienteNome').value = '';
     document.getElementById('clienteCPF').value = '';
@@ -209,6 +217,7 @@ davi walker fernandes
     document.getElementById('prestadorNome').value = '';
     document.getElementById('prestadorCPF').value = '';
     document.getElementById('prestadorEndereco').value = '';
+    document.getElementById('impostoTexto').innerText = '';
   }
 
   window.buscarClientePorCPF = async function(cpf) {
@@ -223,15 +232,8 @@ davi walker fernandes
         const doc = querySnapshot.docs[0];
         const dados = doc.data();
 
-        // Preenche os campos do cliente com os dados encontrados
         document.getElementById('clienteNome').value = dados.clienteNome || '';
         document.getElementById('clienteRG').value = dados.clienteRG || '';
-
-        // Opcional: preencher forma pagamento, prestador, etc, se quiser
-        // document.getElementById('formaPagamento').value = dados.formaPagamento || '';
-        // document.getElementById('prestadorNome').value = dados.prestadorNome || '';
-        // ...
-
         alert(`Dados do cliente "${dados.clienteNome}" carregados pelo CPF.`);
       } else {
         alert('Cliente não encontrado com este CPF.');
@@ -264,6 +266,7 @@ davi walker fernandes
       return;
     }
 
+    const imposto = entradaValor * 0.05;
     let valorParcela = entradaValor;
     let valorRestante = 0;
     if (formaPagamento === "Cartão Crédito" && parcelas > 1) {
@@ -282,6 +285,7 @@ davi walker fernandes
         parcelas,
         valorParcela,
         valorRestante,
+        imposto,
         prestadorNome,
         prestadorCPF,
         prestadorEndereco,
@@ -300,6 +304,7 @@ davi walker fernandes
         <div class="linha"><strong>Parcelas:</strong> ${parcelas}</div>
         <div class="linha"><strong>Valor Parcela:</strong> ${formatarValor(valorParcela)}</div>
         <div class="linha"><strong>Valor Restante:</strong> ${formatarValor(valorRestante)}</div>
+        <div class="linha"><strong>Imposto (5%):</strong> ${formatarValor(imposto)}</div>
         <hr />
         <div class="linha"><strong>Prestador Serviço:</strong> ${prestadorNome}</div>
         <div class="linha"><strong>CPF/CNPJ Prestador:</strong> ${prestadorCPF}</div>
@@ -332,4 +337,3 @@ davi walker fernandes
 
 </body>
 </html>
-
