@@ -1,153 +1,86 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Resumo Financeiro</title>
+  <meta charset="UTF-8">
+  <title>Organização Financeira</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-      color: #333;
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f5f5f5;
     }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-
-    .bloco {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
-    }
-
-    .bloco h3 {
-      margin-bottom: 15px;
-      color: #007bff;
-    }
-
     .linha {
       display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-
-    .linha:last-child {
-      border-bottom: none;
+    .linha img {
+      width: 50px;
     }
-
-    nav {
-      margin-bottom: 20px;
-      text-align: center;
+    .valor {
+      width: 100px;
+      font-size: 14px;
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-
-    nav a {
-      margin-right: 15px;
-      color: #007bff;
-      text-decoration: none;
-      font-weight: bold;
+    .nome-pequeno {
+      font-size: 12px;
+      min-width: 100px;
+      color: #555;
     }
-
-    nav a:hover {
-      text-decoration: underline;
+    .input-nome {
+      width: 130px;
+      font-size: 14px;
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
 
-<nav>
-  <a href="index.html">Entradas</a> |
-  <a href="resumo.html">Resumo</a> |
-  <a href="historico.html">Histórico</a>
-</nav>
+  <div class="container">
 
-<h2>📊 Resumo Financeiro</h2>
+    <div class="linha">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
+      <input class="valor" type="text" placeholder="R$ 0,00">
+      <div class="nome-pequeno">Faturamento</div>
+    </div>
 
-<div class="bloco" id="totaisGerais">
-  <h3>Totais Gerais</h3>
-  <div class="linha"><span>Total Recebido:</span><strong id="totalRecebido">R$ 0,00</strong></div>
-  <div class="linha"><span>Imposto Pago (5%):</span><strong id="totalImposto">R$ 0,00</strong></div>
-</div>
+    <div class="linha">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
+      <input class="valor" type="text" placeholder="R$ 0,00">
+      <div class="nome-pequeno">Imposto</div>
+    </div>
 
-<div class="bloco" id="porFormaPagamento">
-  <h3>Total por Forma de Pagamento</h3>
-</div>
+    <div class="linha">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
+      <input class="valor" type="text" placeholder="R$ 0,00">
+      <input class="input-nome" type="text" placeholder="Nome funcionário">
+      <div class="nome-pequeno">Funcionário</div>
+    </div>
 
-<div class="bloco" id="porPrestador">
-  <h3>Total por Prestador de Serviço</h3>
-</div>
+    <div class="linha">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
+      <input class="valor" type="text" placeholder="R$ 0,00">
+      <div class="nome-pequeno">Prolabore (Dono)</div>
+    </div>
 
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <div class="linha">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
+      <input class="valor" type="text" placeholder="R$ 0,00">
+      <div class="nome-pequeno">Investimento</div>
+    </div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
-    authDomain: "controlefinanceiro-23fce.firebaseapp.com",
-    projectId: "controlefinanceiro-23fce",
-    storageBucket: "controlefinanceiro-23fce.appspot.com",
-    messagingSenderId: "967993151955",
-    appId: "1:967993151955:web:ac2711081550ee34519f26"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  function formatar(valor) {
-    return 'R$ ' + valor.toFixed(2).replace('.', ',');
-  }
-
-  async function carregarResumo() {
-    const querySnapshot = await getDocs(collection(db, "entradas_completas"));
-    let total = 0;
-    let totalImposto = 0;
-    const porForma = {};
-    const porPrestador = {};
-
-    querySnapshot.forEach(doc => {
-      const d = doc.data();
-      total += d.entradaValor || 0;
-      totalImposto += d.imposto || 0;
-
-      // Pagamento
-      const forma = d.formaPagamento || 'Indefinido';
-      porForma[forma] = (porForma[forma] || 0) + (d.entradaValor || 0);
-
-      // Prestador
-      const prestador = d.prestadorNome || 'Não informado';
-      porPrestador[prestador] = (porPrestador[prestador] || 0) + (d.entradaValor || 0);
-    });
-
-    document.getElementById("totalRecebido").innerText = formatar(total);
-    document.getElementById("totalImposto").innerText = formatar(totalImposto);
-
-    const divForma = document.getElementById("porFormaPagamento");
-    for (const forma in porForma) {
-      const linha = document.createElement('div');
-      linha.className = 'linha';
-      linha.innerHTML = `<span>${forma}</span><strong>${formatar(porForma[forma])}</strong>`;
-      divForma.appendChild(linha);
-    }
-
-    const divPrestador = document.getElementById("porPrestador");
-    for (const prestador in porPrestador) {
-      const linha = document.createElement('div');
-      linha.className = 'linha';
-      linha.innerHTML = `<span>${prestador}</span><strong>${formatar(porPrestador[prestador])}</strong>`;
-      divPrestador.appendChild(linha);
-    }
-  }
-
-  carregarResumo();
-</script>
+  </div>
 
 </body>
 </html>
-
