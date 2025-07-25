@@ -43,6 +43,22 @@
       border: 1px solid #ccc;
       border-radius: 6px;
     }
+    button {
+      margin-top: 20px;
+      padding: 10px 16px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      width: 200px;
+      align-self: start;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
   </style>
 </head>
 <body>
@@ -78,9 +94,11 @@
     <input class="valor" type="text" id="valorInvestimento" placeholder="R$ 0,00" readonly>
     <div class="nome-pequeno">Investimento (30%)</div>
   </div>
+
+  <button onclick="zerarCampos()">Zerar Imposto, Funcionário e Prolabore</button>
 </div>
 
-<!-- Firebase -->
+<!-- Firebase e JS -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -122,7 +140,21 @@
     document.getElementById('imposto').value = formatarValor(totalImposto);
     document.getElementById('valorFuncionario').value = formatarValor(porcentagem);
     document.getElementById('valorDono').value = formatarValor(porcentagem);
-    document.getElementById('valorInvestimento').value = formatarValor(porcentagem);
+
+    // Aqui vamos atualizar o investimento acumulado
+    const investimentoInput = document.getElementById('valorInvestimento');
+    let investimentoAtual = investimentoInput.value ? parseFloat(investimentoInput.value.replace('R$ ', '').replace(',', '.')) : 0;
+
+    // Somar porcentagem ao investimento atual
+    investimentoAtual += porcentagem;
+    investimentoInput.value = formatarValor(investimentoAtual);
+  }
+
+  function zerarCampos() {
+    document.getElementById('imposto').value = 'R$ 0,00';
+    document.getElementById('valorFuncionario').value = 'R$ 0,00';
+    document.getElementById('valorDono').value = 'R$ 0,00';
+    // investimento NÃO é zerado
   }
 
   calcularTotais();
