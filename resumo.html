@@ -101,7 +101,7 @@
 <!-- Firebase e JS -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
@@ -117,6 +117,25 @@
 
   function formatarValor(valor) {
     return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+  }
+
+  // --- Função para ler investimento acumulado do Firestore ---
+  async function lerInvestimentoAcumulado() {
+    const docRef = doc(db, "config", "investimentoAcumulado");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data().valor || 0;
+    } else {
+      // Se não existir, inicializa com zero
+      await setDoc(docRef, { valor: 0 });
+      return 0;
+    }
+  }
+
+  // --- Função para salvar investimento acumulado no Firestore ---
+  async function salvarInvestimentoAcumulado(valor) {
+    const docRef = doc(db, "config", "investimentoAcumulado");
+    await setDoc(docRef, { valor: valor });
   }
 
   async function calcularTotais() {
@@ -141,13 +160,15 @@
     document.getElementById('valorFuncionario').value = formatarValor(porcentagem);
     document.getElementById('valorDono').value = formatarValor(porcentagem);
 
-    // Aqui vamos atualizar o investimento acumulado
-    const investimentoInput = document.getElementById('valorInvestimento');
-    let investimentoAtual = investimentoInput.value ? parseFloat(investimentoInput.value.replace('R$ ', '').replace(',', '.')) : 0;
+    // Ler investimento acumulado do Firestore
+    let investimentoAtual = await lerInvestimentoAcumulado();
 
-    // Somar porcentagem ao investimento atual
     investimentoAtual += porcentagem;
-    investimentoInput.value = formatarValor(investimentoAtual);
+
+    document.getElementById('valorInvestimento').value = formatarValor(investimentoAtual);
+
+    // Salvar investimento atualizado no Firestore
+    await salvarInvestimentoAcumulado(investimentoAtual);
   }
 
   function zerarCampos() {
