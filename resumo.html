@@ -37,20 +37,44 @@
       color: #444;
       flex-grow: 1;
     }
-    button {
-      margin-top: 30px;
-      padding: 14px;
-      font-size: 18px;
+    button, input[type=number] {
+      padding: 12px;
+      font-size: 16px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #ccc;
+      margin-top: 12px;
+    }
+    button {
       background-color: #007bff;
       color: white;
+      border: none;
       cursor: pointer;
       width: 100%;
       transition: background-color 0.3s;
     }
     button:hover {
       background-color: #0056b3;
+    }
+    form#formNovaEntrada {
+      margin-top: 30px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    form#formNovaEntrada img {
+      width: 40px;
+      height: 40px;
+    }
+    form#formNovaEntrada input[type=number] {
+      flex-grow: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    form#formNovaEntrada button {
+      width: auto;
+      padding: 12px 20px;
     }
   </style>
 </head>
@@ -90,9 +114,22 @@
 
   <button id="btnZerar">Zerar Imposto, Funcionário e Pró-labore</button>
 
+  <form id="formNovaEntrada">
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Nova entrada" />
+    <input
+      type="number"
+      id="inputValor"
+      placeholder="Valor bruto da entrada (R$)"
+      step="0.01"
+      min="0"
+      required
+    />
+    <button type="submit">Adicionar</button>
+  </form>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
@@ -106,53 +143,43 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Função para formatar valor em R$
     function formatarValor(valor) {
       return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    // Ler dados da coleção e calcular totais
     async function carregarTotais() {
       const entradasRef = collection(db, "entradas_completas");
       const snapshot = await getDocs(entradasRef);
 
       let totalFaturamento = 0;
       let totalImposto = 0;
+      let totalFuncionario = 0;
+      let totalProlabore = 0;
 
       snapshot.forEach(doc => {
         const data = doc.data();
         totalFaturamento += data.entradaValor || 0;
         totalImposto += data.imposto || 0;
+        totalFuncionario += data.valorFuncionario || 0;
+        totalProlabore += data.valorDono || 0;
       });
 
-      const restante = totalFaturamento - totalImposto;
-      const percentual30 = restante * 0.3;
-
-      // Mostrar valores na tela
       document.getElementById('faturamento').innerText = formatarValor(totalFaturamento);
       document.getElementById('imposto').innerText = formatarValor(totalImposto);
-      document.getElementById('funcionario').innerText = formatarValor(percentual30);
-      document.getElementById('prolabore').innerText = formatarValor(percentual30);
+      document.getElementById('funcionario').innerText = formatarValor(totalFuncionario);
+      document.getElementById('prolabore').innerText = formatarValor(totalProlabore);
 
-      // Investimento acumulado fica salvo em config/investimentoAcumulado
       const investRef = doc(db, "config", "investimentoAcumulado");
       const investSnap = await getDoc(investRef);
       let investimentoAtual = 0;
       if (investSnap.exists()) {
         investimentoAtual = investSnap.data().valor || 0;
       } else {
-        // Inicializa com zero se não existir
         await setDoc(investRef, { valor: 0 });
       }
-
-      // Acumula percentual30 (se quiser somar cada vez que carregar)
-      // Se não quiser somar automaticamente toda vez, comente esta linha:
-      // investimentoAtual += percentual30;
-
       document.getElementById('investimento').innerText = formatarValor(investimentoAtual);
     }
 
-    // Função que zera imposto, funcionário e prolabore no Firestore e tela
     async function zerarValores() {
       const entradasRef = collection(db, "entradas_completas");
       const snapshot = await getDocs(entradasRef);
@@ -170,7 +197,6 @@
 
       await Promise.all(promises);
 
-      // Atualizar tela zerando valores
       document.getElementById('imposto').innerText = formatarValor(0);
       document.getElementById('funcionario').innerText = formatarValor(0);
       document.getElementById('prolabore').innerText = formatarValor(0);
@@ -178,12 +204,58 @@
       alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
     }
 
+    function parseValor(valor) {
+      if (typeof valor === "string") {
+        return parseFloat(valor.replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+      }
+      return valor || 0;
+    }
+
+    async function addNovaEntrada(valorBruto) {
+      const entradasRef = collection(db, "entradas_completas");
+      const faturamento = parseValor(valorBruto);
+
+      const imposto = faturamento * 0.05;
+      const restante = faturamento - imposto;
+      const funcionario = restante * 0.30;
+      const prolabore = restante * 0.30;
+      const investimento = restante * 0.30;
+
+      const novaEntrada = {
+        entradaValor: faturamento,
+        imposto: imposto,
+        valorFuncionario: funcionario,
+        valorDono: prolabore,
+        investimento: investimento,
+        data: new Date().toISOString()
+      };
+
+      try {
+        const docRef = await addDoc(entradasRef, novaEntrada);
+        alert("Entrada cadastrada com sucesso!");
+        carregarTotais();
+      } catch (e) {
+        console.error("Erro ao adicionar entrada: ", e);
+        alert("Erro ao salvar entrada.");
+      }
+    }
+
     document.getElementById('btnZerar').addEventListener('click', () => {
       zerarValores();
     });
 
-    carregarTotais();
+    document.getElementById('formNovaEntrada').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const valorInput = document.getElementById('inputValor').value;
+      if (valorInput && parseFloat(valorInput) > 0) {
+        addNovaEntrada(valorInput);
+        document.getElementById('inputValor').value = '';
+      } else {
+        alert("Informe um valor válido maior que zero.");
+      }
+    });
 
+    carregarTotais();
   </script>
 
 </body>
