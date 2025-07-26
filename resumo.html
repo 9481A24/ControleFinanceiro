@@ -240,9 +240,10 @@
       const faturamento = parseValor(valorBruto);
       const imposto = faturamento * 0.05;
       const restante = faturamento - imposto;
-      const funcionario = restante * 0.30;
-      const prolabore = restante * 0.35;
       const investimento = restante * 0.30;
+      const restanteLiquido = restante - investimento;
+      const funcionario = restanteLiquido * 0.4615;
+      const prolabore = restanteLiquido * 0.5385;
 
       const novaEntrada = {
         entradaValor: faturamento,
@@ -256,7 +257,6 @@
       try {
         await addDoc(entradasRef, novaEntrada);
 
-        // Atualizar investimento acumulado
         const investSnap = await getDoc(investRef);
         let investimentoAtual = 0;
         if (investSnap.exists()) {
@@ -267,7 +267,6 @@
 
         alert("Entrada cadastrada com sucesso!");
 
-        // Mostrar valores calculados da entrada
         document.getElementById('mostraImposto').innerText = formatarValor(imposto);
         document.getElementById('mostraFuncionario').innerText = formatarValor(funcionario);
         document.getElementById('mostraProlabore').innerText = formatarValor(prolabore);
