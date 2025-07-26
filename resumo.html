@@ -60,6 +60,7 @@
       display: flex;
       gap: 12px;
       align-items: center;
+      justify-content: space-between;
     }
     form#formNovaEntrada img {
       width: 40px;
@@ -75,6 +76,19 @@
     form#formNovaEntrada button {
       width: auto;
       padding: 12px 20px;
+    }
+    #resumoEntrada {
+      min-width: 180px;
+      background: #e7f0ff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: none;
+      font-size: 14px;
+      color: #333;
+    }
+    #resumoEntrada h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -103,7 +117,7 @@
   <div class="linha">
     <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Prolabore">
     <div class="valor" id="prolabore">R$ 0,00</div>
-    <div class="nome">Pró-labore (30%)</div>
+    <div class="nome">Pró-labore (35%)</div>
   </div>
 
   <div class="linha">
@@ -114,17 +128,25 @@
 
   <button id="btnZerar">Zerar Imposto, Funcionário e Pró-labore</button>
 
-  <form id="formNovaEntrada">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Nova entrada" />
-    <input
-      type="number"
-      id="inputValor"
-      placeholder="Valor bruto da entrada (R$)"
-      step="0.01"
-      min="0"
-      required
-    />
-    <button type="submit">Adicionar</button>
+  <form id="formNovaEntrada" >
+    <div style="display:flex; align-items:center; gap:12px; flex-grow: 1;">
+      <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Nova entrada" />
+      <input
+        type="number"
+        id="inputValor"
+        placeholder="Valor bruto da entrada (R$)"
+        step="0.01"
+        min="0"
+        required
+      />
+      <button type="submit">Adicionar</button>
+    </div>
+    <div id="resumoEntrada">
+      <h3>Resumo</h3>
+      <p><strong>Imposto (5%):</strong> <span id="mostraImposto">R$ 0,00</span></p>
+      <p><strong>Funcionário (30%):</strong> <span id="mostraFuncionario">R$ 0,00</span></p>
+      <p><strong>Pró-labore (35%):</strong> <span id="mostraProlabore">R$ 0,00</span></p>
+    </div>
   </form>
 
   <script type="module">
@@ -145,6 +167,13 @@
 
     function formatarValor(valor) {
       return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function parseValor(valor) {
+      if (typeof valor === "string") {
+        return parseFloat(valor.replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+      }
+      return valor || 0;
     }
 
     async function carregarTotais() {
@@ -204,21 +233,15 @@
       alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
     }
 
-    function parseValor(valor) {
-      if (typeof valor === "string") {
-        return parseFloat(valor.replace(",", ".").replace(/[^\d.]/g, "")) || 0;
-      }
-      return valor || 0;
-    }
-
     async function addNovaEntrada(valorBruto) {
       const entradasRef = collection(db, "entradas_completas");
-      const faturamento = parseValor(valorBruto);
+      const investRef = doc(db, "config", "investimentoAcumulado");
 
+      const faturamento = parseValor(valorBruto);
       const imposto = faturamento * 0.05;
       const restante = faturamento - imposto;
       const funcionario = restante * 0.30;
-      const prolabore = restante * 0.30;
+      const prolabore = restante * 0.35;
       const investimento = restante * 0.30;
 
       const novaEntrada = {
@@ -231,8 +254,25 @@
       };
 
       try {
-        const docRef = await addDoc(entradasRef, novaEntrada);
+        await addDoc(entradasRef, novaEntrada);
+
+        // Atualizar investimento acumulado
+        const investSnap = await getDoc(investRef);
+        let investimentoAtual = 0;
+        if (investSnap.exists()) {
+          investimentoAtual = investSnap.data().valor || 0;
+        }
+        investimentoAtual += investimento;
+        await setDoc(investRef, { valor: investimentoAtual });
+
         alert("Entrada cadastrada com sucesso!");
+
+        // Mostrar valores calculados da entrada
+        document.getElementById('mostraImposto').innerText = formatarValor(imposto);
+        document.getElementById('mostraFuncionario').innerText = formatarValor(funcionario);
+        document.getElementById('mostraProlabore').innerText = formatarValor(prolabore);
+        document.getElementById('resumoEntrada').style.display = 'block';
+
         carregarTotais();
       } catch (e) {
         console.error("Erro ao adicionar entrada: ", e);
