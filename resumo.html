@@ -68,10 +68,6 @@
     }
     form#formNovaEntrada input[type=number] {
       flex-grow: 1;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
     }
     form#formNovaEntrada button {
       width: auto;
@@ -95,12 +91,6 @@
 <body>
 
   <h1>Resumo Financeiro</h1>
-
-  <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Faturamento">
-    <div class="valor" id="faturamento">R$ 0,00</div>
-    <div class="nome">Faturamento</div>
-  </div>
 
   <div class="linha">
     <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Imposto">
@@ -128,7 +118,7 @@
 
   <button id="btnZerar">Zerar Imposto, Funcionário e Pró-labore</button>
 
-  <form id="formNovaEntrada" >
+  <form id="formNovaEntrada">
     <div style="display:flex; align-items:center; gap:12px; flex-grow: 1;">
       <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Nova entrada" />
       <input
@@ -180,20 +170,17 @@
       const entradasRef = collection(db, "entradas_completas");
       const snapshot = await getDocs(entradasRef);
 
-      let totalFaturamento = 0;
       let totalImposto = 0;
       let totalFuncionario = 0;
       let totalProlabore = 0;
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        totalFaturamento += data.entradaValor || 0;
         totalImposto += data.imposto || 0;
         totalFuncionario += data.valorFuncionario || 0;
         totalProlabore += data.valorDono || 0;
       });
 
-      document.getElementById('faturamento').innerText = formatarValor(totalFaturamento);
       document.getElementById('imposto').innerText = formatarValor(totalImposto);
       document.getElementById('funcionario').innerText = formatarValor(totalFuncionario);
       document.getElementById('prolabore').innerText = formatarValor(totalProlabore);
@@ -210,27 +197,34 @@
     }
 
     async function zerarValores() {
-      const entradasRef = collection(db, "entradas_completas");
-      const snapshot = await getDocs(entradasRef);
+      try {
+        const entradasRef = collection(db, "entradas_completas");
+        const snapshot = await getDocs(entradasRef);
 
-      const promises = [];
+        const promises = [];
 
-      snapshot.forEach((docSnap) => {
-        const docRef = doc(db, "entradas_completas", docSnap.id);
-        promises.push(updateDoc(docRef, {
-          imposto: 0,
-          valorFuncionario: 0,
-          valorDono: 0,
-        }));
-      });
+        snapshot.forEach((docSnap) => {
+          const docRef = doc(db, "entradas_completas", docSnap.id);
+          const dados = docSnap.data();
 
-      await Promise.all(promises);
+          const novaEntrada = {
+            ...dados,
+            imposto: 0,
+            valorFuncionario: 0,
+            valorDono: 0,
+          };
 
-      document.getElementById('imposto').innerText = formatarValor(0);
-      document.getElementById('funcionario').innerText = formatarValor(0);
-      document.getElementById('prolabore').innerText = formatarValor(0);
+          promises.push(setDoc(docRef, novaEntrada));
+        });
 
-      alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
+        await Promise.all(promises);
+        await carregarTotais();
+
+        alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
+      } catch (error) {
+        console.error("Erro ao zerar valores:", error);
+        alert("Erro ao zerar valores.");
+      }
     }
 
     async function addNovaEntrada(valorBruto) {
@@ -239,18 +233,16 @@
 
       const faturamento = parseValor(valorBruto);
       const imposto = faturamento * 0.05;
-      const restante = faturamento - imposto;
-      const investimento = restante * 0.30;
-      const restanteLiquido = restante - investimento;
-      const funcionario = restanteLiquido * 0.4615;
-      const prolabore = restanteLiquido * 0.5385;
+      const funcionario = faturamento * 0.30;
+      const prolabore = faturamento * 0.35;
+      const investimento = faturamento * 0.30;
 
       const novaEntrada = {
         entradaValor: faturamento,
-        imposto: imposto,
+        imposto,
         valorFuncionario: funcionario,
         valorDono: prolabore,
-        investimento: investimento,
+        investimento,
         data: new Date().toISOString()
       };
 
@@ -279,9 +271,7 @@
       }
     }
 
-    document.getElementById('btnZerar').addEventListener('click', () => {
-      zerarValores();
-    });
+    document.getElementById('btnZerar').addEventListener('click', zerarValores);
 
     document.getElementById('formNovaEntrada').addEventListener('submit', (e) => {
       e.preventDefault();
