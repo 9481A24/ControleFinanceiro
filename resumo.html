@@ -1,59 +1,52 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Organização Financeira</title>
+  <meta charset="UTF-8" />
+  <title>Resumo Financeiro</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 30px;
       background: #f5f5f5;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      max-width: 600px;
+      margin: auto;
     }
     .linha {
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
     .linha img {
-      width: 50px;
+      width: 40px;
+      height: 40px;
     }
     .valor {
-      width: 100px;
-      font-size: 14px;
-      padding: 5px 8px;
+      font-size: 18px;
+      font-weight: bold;
+      min-width: 120px;
+      background: white;
+      padding: 6px 12px;
+      border-radius: 8px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #fff;
+      text-align: center;
+      user-select: none;
     }
-    .nome-pequeno {
-      font-size: 12px;
-      min-width: 100px;
-      color: #555;
-    }
-    .input-nome {
-      width: 130px;
-      font-size: 14px;
-      padding: 5px 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+    .nome {
+      font-size: 16px;
+      color: #444;
+      flex-grow: 1;
     }
     button {
-      margin-top: 20px;
-      padding: 10px 16px;
-      font-size: 16px;
+      margin-top: 30px;
+      padding: 14px;
+      font-size: 18px;
       border-radius: 8px;
       border: none;
       background-color: #007bff;
       color: white;
       cursor: pointer;
-      width: 200px;
-      align-self: start;
+      width: 100%;
       transition: background-color 0.3s;
     }
     button:hover {
@@ -63,123 +56,135 @@
 </head>
 <body>
 
-<div class="container">
+  <h1>Resumo Financeiro</h1>
+
   <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
-    <input class="valor" type="text" id="faturamento" placeholder="R$ 0,00" readonly>
-    <div class="nome-pequeno">Faturamento</div>
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Faturamento">
+    <div class="valor" id="faturamento">R$ 0,00</div>
+    <div class="nome">Faturamento</div>
   </div>
 
   <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
-    <input class="valor" type="text" id="imposto" placeholder="R$ 0,00" readonly>
-    <div class="nome-pequeno">Imposto</div>
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Imposto">
+    <div class="valor" id="imposto">R$ 0,00</div>
+    <div class="nome">Imposto (5%)</div>
   </div>
 
   <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
-    <input class="valor" type="text" id="valorFuncionario" placeholder="R$ 0,00" readonly>
-    <input class="input-nome" type="text" placeholder="Nome funcionário">
-    <div class="nome-pequeno">Funcionário (30%)</div>
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Funcionário">
+    <div class="valor" id="funcionario">R$ 0,00</div>
+    <div class="nome">Funcionário (30%)</div>
   </div>
 
   <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
-    <input class="valor" type="text" id="valorDono" placeholder="R$ 0,00" readonly>
-    <div class="nome-pequeno">Prolabore (Dono - 30%)</div>
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Prolabore">
+    <div class="valor" id="prolabore">R$ 0,00</div>
+    <div class="nome">Pró-labore (30%)</div>
   </div>
 
   <div class="linha">
-    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="">
-    <input class="valor" type="text" id="valorInvestimento" placeholder="R$ 0,00" readonly>
-    <div class="nome-pequeno">Investimento (30%)</div>
+    <img src="https://raw.githubusercontent.com/9481A24/ControleFinanceiro/main/download.png" alt="Investimento">
+    <div class="valor" id="investimento">R$ 0,00</div>
+    <div class="nome">Investimento (30%)</div>
   </div>
 
-  <button onclick="zerarCampos()">Zerar Imposto, Funcionário e Prolabore</button>
-</div>
+  <button id="btnZerar">Zerar Imposto, Funcionário e Pró-labore</button>
 
-<!-- Firebase e JS -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
-    authDomain: "controlefinanceiro-23fce.firebaseapp.com",
-    projectId: "controlefinanceiro-23fce",
-    storageBucket: "controlefinanceiro-23fce.appspot.com",
-    messagingSenderId: "967993151955",
-    appId: "1:967993151955:web:ac2711081550ee34519f26"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
+      authDomain: "controlefinanceiro-23fce.firebaseapp.com",
+      projectId: "controlefinanceiro-23fce",
+      storageBucket: "controlefinanceiro-23fce.appspot.com",
+      messagingSenderId: "967993151955",
+      appId: "1:967993151955:web:ac2711081550ee34519f26"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  function formatarValor(valor) {
-    return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-  }
-
-  // --- Função para ler investimento acumulado do Firestore ---
-  async function lerInvestimentoAcumulado() {
-    const docRef = doc(db, "config", "investimentoAcumulado");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return docSnap.data().valor || 0;
-    } else {
-      // Se não existir, inicializa com zero
-      await setDoc(docRef, { valor: 0 });
-      return 0;
+    // Função para formatar valor em R$
+    function formatarValor(valor) {
+      return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
-  }
 
-  // --- Função para salvar investimento acumulado no Firestore ---
-  async function salvarInvestimentoAcumulado(valor) {
-    const docRef = doc(db, "config", "investimentoAcumulado");
-    await setDoc(docRef, { valor: valor });
-  }
+    // Ler dados da coleção e calcular totais
+    async function carregarTotais() {
+      const entradasRef = collection(db, "entradas_completas");
+      const snapshot = await getDocs(entradasRef);
 
-  async function calcularTotais() {
-    const entradasRef = collection(db, "entradas_completas");
-    const snapshot = await getDocs(entradasRef);
+      let totalFaturamento = 0;
+      let totalImposto = 0;
 
-    let totalFaturamento = 0;
-    let totalImposto = 0;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        totalFaturamento += data.entradaValor || 0;
+        totalImposto += data.imposto || 0;
+      });
 
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      totalFaturamento += data.entradaValor || 0;
-      totalImposto += data.imposto || 0;
+      const restante = totalFaturamento - totalImposto;
+      const percentual30 = restante * 0.3;
+
+      // Mostrar valores na tela
+      document.getElementById('faturamento').innerText = formatarValor(totalFaturamento);
+      document.getElementById('imposto').innerText = formatarValor(totalImposto);
+      document.getElementById('funcionario').innerText = formatarValor(percentual30);
+      document.getElementById('prolabore').innerText = formatarValor(percentual30);
+
+      // Investimento acumulado fica salvo em config/investimentoAcumulado
+      const investRef = doc(db, "config", "investimentoAcumulado");
+      const investSnap = await getDoc(investRef);
+      let investimentoAtual = 0;
+      if (investSnap.exists()) {
+        investimentoAtual = investSnap.data().valor || 0;
+      } else {
+        // Inicializa com zero se não existir
+        await setDoc(investRef, { valor: 0 });
+      }
+
+      // Acumula percentual30 (se quiser somar cada vez que carregar)
+      // Se não quiser somar automaticamente toda vez, comente esta linha:
+      // investimentoAtual += percentual30;
+
+      document.getElementById('investimento').innerText = formatarValor(investimentoAtual);
+    }
+
+    // Função que zera imposto, funcionário e prolabore no Firestore e tela
+    async function zerarValores() {
+      const entradasRef = collection(db, "entradas_completas");
+      const snapshot = await getDocs(entradasRef);
+
+      const promises = [];
+
+      snapshot.forEach((docSnap) => {
+        const docRef = doc(db, "entradas_completas", docSnap.id);
+        promises.push(updateDoc(docRef, {
+          imposto: 0,
+          valorFuncionario: 0,
+          valorDono: 0,
+        }));
+      });
+
+      await Promise.all(promises);
+
+      // Atualizar tela zerando valores
+      document.getElementById('imposto').innerText = formatarValor(0);
+      document.getElementById('funcionario').innerText = formatarValor(0);
+      document.getElementById('prolabore').innerText = formatarValor(0);
+
+      alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
+    }
+
+    document.getElementById('btnZerar').addEventListener('click', () => {
+      zerarValores();
     });
 
-    const restante = totalFaturamento - totalImposto;
-    const porcentagem = restante / 100 * 30;
+    carregarTotais();
 
-    // Preencher campos
-    document.getElementById('faturamento').value = formatarValor(totalFaturamento);
-    document.getElementById('imposto').value = formatarValor(totalImposto);
-    document.getElementById('valorFuncionario').value = formatarValor(porcentagem);
-    document.getElementById('valorDono').value = formatarValor(porcentagem);
-
-    // Ler investimento acumulado do Firestore
-    let investimentoAtual = await lerInvestimentoAcumulado();
-
-    investimentoAtual += porcentagem;
-
-    document.getElementById('valorInvestimento').value = formatarValor(investimentoAtual);
-
-    // Salvar investimento atualizado no Firestore
-    await salvarInvestimentoAcumulado(investimentoAtual);
-  }
-
-  function zerarCampos() {
-    document.getElementById('imposto').value = 'R$ 0,00';
-    document.getElementById('valorFuncionario').value = 'R$ 0,00';
-    document.getElementById('valorDono').value = 'R$ 0,00';
-    // investimento NÃO é zerado
-  }
-
-  calcularTotais();
-</script>
+  </script>
 
 </body>
 </html>
