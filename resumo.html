@@ -260,4 +260,45 @@
       try {
         await addDoc(entradasRef, novaEntrada);
 
-        const investSnap = await getDoc
+        const investSnap = await getDoc(investRef);
+        let investimentoAtual = 0;
+        if (investSnap.exists()) {
+          investimentoAtual = investSnap.data().valor || 0;
+        }
+        investimentoAtual += investimento;
+        console.log("Atualizando investimento acumulado para:", investimentoAtual);
+        await setDoc(investRef, { valor: investimentoAtual });
+
+        alert("Entrada cadastrada com sucesso!");
+
+        document.getElementById('mostraImposto').innerText = formatarValor(imposto);
+        document.getElementById('mostraFuncionario').innerText = formatarValor(funcionario);
+        document.getElementById('mostraProlabore').innerText = formatarValor(prolabore);
+        document.getElementById('mostraInvestimento').innerText = formatarValor(investimento);
+        document.getElementById('resumoEntrada').style.display = 'block';
+
+        carregarTotais();
+      } catch (e) {
+        console.error("Erro ao adicionar entrada: ", e);
+        alert("Erro ao salvar entrada.");
+      }
+    }
+
+    document.getElementById('btnZerar').addEventListener('click', zerarValores);
+
+    document.getElementById('formNovaEntrada').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const valorInput = document.getElementById('inputValor').value;
+      if (valorInput && parseFloat(valorInput) > 0) {
+        addNovaEntrada(valorInput);
+        document.getElementById('inputValor').value = '';
+      } else {
+        alert("Informe um valor válido maior que zero.");
+      }
+    });
+
+    carregarTotais();
+  </script>
+
+</body>
+</html>
