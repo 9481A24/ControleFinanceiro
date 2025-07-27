@@ -167,7 +167,6 @@
       return valor || 0;
     }
 
-    // Carrega os totais atuais do Firestore e atualiza a interface
     async function carregarTotais() {
       const entradasRef = collection(db, "entradas_completas");
       const snapshot = await getDocs(entradasRef);
@@ -176,14 +175,16 @@
       let totalFuncionario = 0;
       let totalProlabore = 0;
 
+      console.log("Iniciando soma dos totais das entradas...");
       snapshot.forEach(doc => {
         const data = doc.data();
+        console.log("Entrada lida:", data);
         totalImposto += data.imposto || 0;
         totalFuncionario += data.valorFuncionario || 0;
         totalProlabore += data.valorDono || 0;
       });
+      console.log("Totais calculados:", { totalImposto, totalFuncionario, totalProlabore });
 
-      // Busca investimento acumulado
       const investRef = doc(db, "config", "investimentoAcumulado");
       const investSnap = await getDoc(investRef);
       let investimentoAtual = 0;
@@ -192,6 +193,7 @@
       } else {
         await setDoc(investRef, { valor: 0 });
       }
+      console.log("Investimento acumulado atual:", investimentoAtual);
 
       document.getElementById('imposto').innerText = formatarValor(totalImposto);
       document.getElementById('funcionario').innerText = formatarValor(totalFuncionario);
@@ -199,10 +201,8 @@
       document.getElementById('investimento').innerText = formatarValor(investimentoAtual);
     }
 
-    // Zera imposto, funcionário, pró-labore e investimento acumulado
     async function zerarValores() {
       try {
-        // Zera os campos das entradas individuais
         const entradasRef = collection(db, "entradas_completas");
         const snapshot = await getDocs(entradasRef);
 
@@ -224,7 +224,6 @@
 
         await Promise.all(promises);
 
-        // Zera investimento acumulado
         const investRef = doc(db, "config", "investimentoAcumulado");
         await setDoc(investRef, { valor: 0 });
 
@@ -237,7 +236,6 @@
       }
     }
 
-    // Adiciona uma nova entrada e atualiza Firestore e interface
     async function addNovaEntrada(valorBruto) {
       const entradasRef = collection(db, "entradas_completas");
       const investRef = doc(db, "config", "investimentoAcumulado");
@@ -257,50 +255,9 @@
         data: new Date().toISOString()
       };
 
+      console.log("Gravando nova entrada:", novaEntrada);
+
       try {
         await addDoc(entradasRef, novaEntrada);
 
-        const investSnap = await getDoc(investRef);
-        let investimentoAtual = 0;
-        if (investSnap.exists()) {
-          investimentoAtual = investSnap.data().valor || 0;
-        }
-        investimentoAtual += investimento;
-        await setDoc(investRef, { valor: investimentoAtual });
-
-        alert("Entrada cadastrada com sucesso!");
-
-        // Atualiza resumo da entrada
-        document.getElementById('mostraImposto').innerText = formatarValor(imposto);
-        document.getElementById('mostraFuncionario').innerText = formatarValor(funcionario);
-        document.getElementById('mostraProlabore').innerText = formatarValor(prolabore);
-        document.getElementById('mostraInvestimento').innerText = formatarValor(investimento);
-        document.getElementById('resumoEntrada').style.display = 'block';
-
-        // Atualiza totais gerais
-        carregarTotais();
-      } catch (e) {
-        console.error("Erro ao adicionar entrada: ", e);
-        alert("Erro ao salvar entrada.");
-      }
-    }
-
-    document.getElementById('btnZerar').addEventListener('click', zerarValores);
-
-    document.getElementById('formNovaEntrada').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const valorInput = document.getElementById('inputValor').value;
-      if (valorInput && parseFloat(valorInput) > 0) {
-        addNovaEntrada(valorInput);
-        document.getElementById('inputValor').value = '';
-      } else {
-        alert("Informe um valor válido maior que zero.");
-      }
-    });
-
-    // Carrega os totais ao iniciar a página
-    carregarTotais();
-  </script>
-
-</body>
-</html>
+        const investSnap = await getDoc
