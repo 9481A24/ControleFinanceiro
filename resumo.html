@@ -116,7 +116,7 @@
     <div class="nome">Investimento (30%)</div>
   </div>
 
-  <button id="btnZerar">Zerar Imposto, Funcionário e Pró-labore</button>
+  <button id="btnZerar">Zerar Imposto, Funcionário, Pró-labore e Investimento</button>
 
   <form id="formNovaEntrada">
     <div style="display:flex; align-items:center; gap:12px; flex-grow: 1;">
@@ -136,6 +136,7 @@
       <p><strong>Imposto (5%):</strong> <span id="mostraImposto">R$ 0,00</span></p>
       <p><strong>Funcionário (30%):</strong> <span id="mostraFuncionario">R$ 0,00</span></p>
       <p><strong>Pró-labore (35%):</strong> <span id="mostraProlabore">R$ 0,00</span></p>
+      <p><strong>Investimento (30%):</strong> <span id="mostraInvestimento">R$ 0,00</span></p>
     </div>
   </form>
 
@@ -166,6 +167,7 @@
       return valor || 0;
     }
 
+    // Carrega os totais atuais do Firestore e atualiza a interface
     async function carregarTotais() {
       const entradasRef = collection(db, "entradas_completas");
       const snapshot = await getDocs(entradasRef);
@@ -181,10 +183,7 @@
         totalProlabore += data.valorDono || 0;
       });
 
-      document.getElementById('imposto').innerText = formatarValor(totalImposto);
-      document.getElementById('funcionario').innerText = formatarValor(totalFuncionario);
-      document.getElementById('prolabore').innerText = formatarValor(totalProlabore);
-
+      // Busca investimento acumulado
       const investRef = doc(db, "config", "investimentoAcumulado");
       const investSnap = await getDoc(investRef);
       let investimentoAtual = 0;
@@ -193,11 +192,17 @@
       } else {
         await setDoc(investRef, { valor: 0 });
       }
+
+      document.getElementById('imposto').innerText = formatarValor(totalImposto);
+      document.getElementById('funcionario').innerText = formatarValor(totalFuncionario);
+      document.getElementById('prolabore').innerText = formatarValor(totalProlabore);
       document.getElementById('investimento').innerText = formatarValor(investimentoAtual);
     }
 
+    // Zera imposto, funcionário, pró-labore e investimento acumulado
     async function zerarValores() {
       try {
+        // Zera os campos das entradas individuais
         const entradasRef = collection(db, "entradas_completas");
         const snapshot = await getDocs(entradasRef);
 
@@ -218,15 +223,21 @@
         });
 
         await Promise.all(promises);
+
+        // Zera investimento acumulado
+        const investRef = doc(db, "config", "investimentoAcumulado");
+        await setDoc(investRef, { valor: 0 });
+
         await carregarTotais();
 
-        alert("Imposto, Funcionário e Pró-labore zerados com sucesso!");
+        alert("Todos os valores zerados com sucesso!");
       } catch (error) {
         console.error("Erro ao zerar valores:", error);
         alert("Erro ao zerar valores.");
       }
     }
 
+    // Adiciona uma nova entrada e atualiza Firestore e interface
     async function addNovaEntrada(valorBruto) {
       const entradasRef = collection(db, "entradas_completas");
       const investRef = doc(db, "config", "investimentoAcumulado");
@@ -259,11 +270,14 @@
 
         alert("Entrada cadastrada com sucesso!");
 
+        // Atualiza resumo da entrada
         document.getElementById('mostraImposto').innerText = formatarValor(imposto);
         document.getElementById('mostraFuncionario').innerText = formatarValor(funcionario);
         document.getElementById('mostraProlabore').innerText = formatarValor(prolabore);
+        document.getElementById('mostraInvestimento').innerText = formatarValor(investimento);
         document.getElementById('resumoEntrada').style.display = 'block';
 
+        // Atualiza totais gerais
         carregarTotais();
       } catch (e) {
         console.error("Erro ao adicionar entrada: ", e);
@@ -284,6 +298,7 @@
       }
     });
 
+    // Carrega os totais ao iniciar a página
     carregarTotais();
   </script>
 
