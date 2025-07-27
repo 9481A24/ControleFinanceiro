@@ -1,100 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Histórico de Entradas - Controle Financeiro</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    padding: 20px;
-    max-width: 800px;
-    margin: auto;
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-  thead th {
-    background: #007bff;
-    color: white;
-    padding: 10px;
-    text-align: left;
-  }
-  tbody tr:hover {
-    background: #e6f0ff;
-  }
-  tbody td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    vertical-align: middle;
-  }
-  input[type="checkbox"] {
-    transform: scale(1.2);
-    cursor: pointer;
-  }
-  #totalSelecionado {
-    margin: 20px 0;
-    font-weight: bold;
-    font-size: 18px;
-  }
-  button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  button:hover {
-    background-color: #218838;
-  }
-
-  /* Estilo do comprovante - impressora matricial retrô */
-  #comprovanteEstilo {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 14px;
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 15px 20px;
-    border: 1px solid #000;
-    box-shadow: inset 0 0 0 2px #000;
-    white-space: pre-wrap;
-    line-height: 1.6;
-    border-left: 10px dashed #ccc;
-    border-right: 10px dashed #ccc;
-  }
-  #comprovanteEstilo h3 {
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    border-bottom: 1px solid #000;
-    padding-bottom: 6px;
-  }
-  #comprovanteEstilo .linha {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed #aaa;
-    padding: 6px 0;
-  }
-  #comprovanteEstilo .linha:last-child {
-    border-bottom: none;
-  }
-  #comprovanteEstilo .linha strong {
-    font-weight: normal;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Histórico de Entradas - Controle Financeiro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    thead th {
+      background: #007bff;
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+    tbody tr:hover {
+      background: #e6f0ff;
+    }
+    tbody td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+      vertical-align: middle;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+    #totalSelecionado {
+      margin: 20px 0 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    #divisaoValores {
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #comprovanteEstilo {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 14px;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 15px 20px;
+      border: 1px solid #000;
+      box-shadow: inset 0 0 0 2px #000;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      border-left: 10px dashed #ccc;
+      border-right: 10px dashed #ccc;
+    }
+    #comprovanteEstilo h3 {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 6px;
+    }
+    #comprovanteEstilo .linha {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #aaa;
+      padding: 6px 0;
+    }
+    #comprovanteEstilo .linha:last-child {
+      border-bottom: none;
+    }
+    #comprovanteEstilo .linha strong {
+      font-weight: normal;
+    }
+  </style>
 </head>
 <body>
 
@@ -118,12 +119,18 @@
 </table>
 
 <div id="totalSelecionado">Total Selecionado: R$ 0,00</div>
+<div id="divisaoValores">
+  <p><strong>Imposto (5%):</strong> R$ 0,00</p>
+  <p><strong>Funcionário (30%):</strong> R$ 0,00</p>
+  <p><strong>Prolabore (35%):</strong> R$ 0,00</p>
+  <p><strong>Investimento (30%):</strong> R$ 0,00</p>
+</div>
 
 <button id="btnGerarComprovante" disabled>🖨️ Gerar Comprovante</button>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBqYQKqnPKSm0GyziIsGNmyamEevpki0YE",
@@ -137,6 +144,13 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  const tabelaBody = document.querySelector("#tabelaEntradas tbody");
+  const totalSelecionadoEl = document.getElementById("totalSelecionado");
+  const btnGerar = document.getElementById("btnGerarComprovante");
+
+  let entradas = [];
+  let selecionados = new Set();
+
   function formatarData(timestamp) {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -147,14 +161,6 @@
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  const tabelaBody = document.querySelector("#tabelaEntradas tbody");
-  const totalSelecionadoEl = document.getElementById("totalSelecionado");
-  const btnGerar = document.getElementById("btnGerarComprovante");
-
-  let entradas = [];
-  let selecionados = new Set();
-
-  // Carrega dados do Firebase e exibe na tabela
   async function carregarEntradas() {
     const entradasRef = collection(db, "entradas_completas");
     const snapshot = await getDocs(entradasRef);
@@ -180,11 +186,10 @@
       tabelaBody.appendChild(tr);
     });
 
-    // Adicionar evento de clique nos checkboxes
     tabelaBody.querySelectorAll('input[type="checkbox"]').forEach(chk => {
       chk.addEventListener('change', e => {
         const id = e.target.getAttribute('data-id');
-        if(e.target.checked) selecionados.add(id);
+        if (e.target.checked) selecionados.add(id);
         else selecionados.delete(id);
         atualizarTotal();
       });
@@ -198,19 +203,36 @@
       if (entrada) total += entrada.entradaValor || 0;
     });
     totalSelecionadoEl.textContent = `Total Selecionado: ${formatarValor(total)}`;
+    atualizarDivisao(total);
     btnGerar.disabled = selecionados.size === 0;
   }
 
-  // Gera o HTML do comprovante estilo impressora matricial
+  function atualizarDivisao(total) {
+    const imposto = total * 0.05;
+    const funcionario = total * 0.30;
+    const prolabore = total * 0.35;
+    const investimento = total * 0.30;
+
+    document.getElementById("divisaoValores").innerHTML = `
+      <p><strong>Imposto (5%):</strong> ${formatarValor(imposto)}</p>
+      <p><strong>Funcionário (30%):</strong> ${formatarValor(funcionario)}</p>
+      <p><strong>Prolabore (35%):</strong> ${formatarValor(prolabore)}</p>
+      <p><strong>Investimento (30%):</strong> ${formatarValor(investimento)}</p>
+    `;
+  }
+
   function gerarHTMLComprovante() {
     let html = `<div id="comprovanteEstilo">
       <h3>COMPROVANTE DE ENTRADAS</h3>`;
 
+    let contador = 1;
     selecionados.forEach(id => {
       const e = entradas.find(ent => ent.id === id);
       if (!e) return;
       const dataStr = formatarData(e.entradaData);
+      const numeroNota = String(contador).padStart(3, '0');
       html += `
+      <div class="linha"><strong>🧾 Nota ${numeroNota}</strong></div>
       <div class="linha"><strong>Cliente:</strong> ${e.clienteNome || '-'}</div>
       <div class="linha"><strong>CPF:</strong> ${e.clienteCPF || '-'}</div>
       <div class="linha"><strong>Data:</strong> ${dataStr}</div>
@@ -218,9 +240,9 @@
       <div class="linha"><strong>Pagamento:</strong> ${e.formaPagamento || '-'}</div>
       <div class="linha"><strong>Prestador:</strong> ${e.prestadorNome || '-'}</div>
       <hr>`;
+      contador++;
     });
 
-    // Soma total
     let somaTotal = 0;
     selecionados.forEach(id => {
       const ent = entradas.find(e => e.id === id);
@@ -241,45 +263,7 @@
           <title>Imprimir Comprovante</title>
           <style>
             body { margin: 20px; background: #fff; }
-            #comprovanteEstilo {
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 14px;
-              max-width: 600px;
-              margin: auto;
-              padding: 15px 20px;
-              border: 1px solid #000;
-              box-shadow: inset 0 0 0 2px #000;
-              white-space: pre-wrap;
-              line-height: 1.6;
-              border-left: 10px dashed #ccc;
-              border-right: 10px dashed #ccc;
-            }
-            #comprovanteEstilo h3 {
-              text-align: center;
-              font-weight: bold;
-              font-size: 18px;
-              margin-bottom: 10px;
-              text-transform: uppercase;
-              letter-spacing: 1.5px;
-              border-bottom: 1px solid #000;
-              padding-bottom: 6px;
-            }
-            #comprovanteEstilo .linha {
-              display: flex;
-              justify-content: space-between;
-              border-bottom: 1px dashed #aaa;
-              padding: 6px 0;
-            }
-            #comprovanteEstilo .linha:last-child {
-              border-bottom: none;
-            }
-            #comprovanteEstilo .linha strong {
-              font-weight: normal;
-            }
-            hr {
-              border: 1px dashed #999;
-              margin: 10px 0;
-            }
+            ${document.querySelector("style").innerHTML}
           </style>
         </head>
         <body onload="window.print();">
@@ -290,10 +274,8 @@
     novaJanela.document.close();
   });
 
-  // Inicializa
   carregarEntradas();
 </script>
 
 </body>
 </html>
-
